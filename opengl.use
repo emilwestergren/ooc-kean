@@ -18,6 +18,7 @@ Imports: OpenGLVolumeMonochrome
 Imports: OpenGLWindow
 Imports: AndroidContext
 Imports: EGLRgba
+Imports: EGLYuv
 Imports: GraphicBuffer
 Imports: GraphicBufferYuv420Semiplanar
 version (linux || apple || android)
