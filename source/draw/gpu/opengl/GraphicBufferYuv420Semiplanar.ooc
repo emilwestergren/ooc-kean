@@ -11,7 +11,7 @@ use geometry
 use base
 use draw-gpu
 use concurrent
-import GraphicBuffer, OpenGLContext, EGLRgba
+import GraphicBuffer, OpenGLContext, EGLRgba, EGLYuv
 
 version(!gpuOff) {
 GraphicBufferYuv420Semiplanar: class extends RasterYuv420Semiplanar {
@@ -50,6 +50,7 @@ GraphicBufferYuv420Semiplanar: class extends RasterYuv420Semiplanar {
 		this _rgba referenceCount increase()
 		this _rgba
 	}
+	toYuv: func (context: OpenGLContext) -> EGLYuv { EGLYuv new(this buffer, context) }
 	_bin := static RecycleBin<EGLRgba> new(100, |image| image referenceCount decrease())
 	free: static func ~all { This _bin clear() }
 }
