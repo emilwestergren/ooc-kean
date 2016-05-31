@@ -59,7 +59,7 @@ Gles3FramebufferObject: class extends GLFramebufferObject {
 		version(debugGL) { validateStart("FramebufferObject _generate") }
 		glGenFramebuffers(1, this _backend&)
 		this bind()
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture _backend, 0)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture _target, texture _backend, 0)
 		status: UInt = glCheckFramebufferStatus(GL_FRAMEBUFFER)
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			statusMessage := getErrorMessage(status)
