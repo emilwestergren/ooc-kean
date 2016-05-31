@@ -17,6 +17,7 @@ Imports: OpenGLContext
 Imports: OpenGLVolumeMonochrome
 Imports: OpenGLWindow
 Imports: AndroidContext
+Imports: YuvExtensionContext
 Imports: EGLRgba
 Imports: EGLYuv
 Imports: GraphicBuffer
