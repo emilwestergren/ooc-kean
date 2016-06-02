@@ -16,10 +16,14 @@ import OpenGLContext, GraphicBuffer, GraphicBufferYuv420Semiplanar, EGLYuv, Open
 
 version(!gpuOff) {
 YuvExtensionContext: class extends OpenGLContext {
-	_yuvShader := OpenGLMap new(slurp("shaders/default.vert"), slurp("shaders/yuv.frag"), this)
+	_yuvShader := OpenGLMapTransform new(slurp("shaders/yuv.frag"), this)
+	yuvShader ::= this _yuvShader
 	_unpackY := OpenGLMap new(slurp("shaders/unpackYuv.vert"), slurp("shaders/unpackYuvToMonochrome.frag"), this)
 	_unpackUv := OpenGLMap new(slurp("shaders/unpackYuv.vert"), slurp("shaders/unpackYuvToUv.frag"), this)
 	_pack := OpenGLMap new(slurp("shaders/unpackYuv.vert"), slurp("shaders/packCompositeYuvToYuv.frag"), this)
+	_outputBuffers := SynchronizedQueue<EGLYuv> new()
+	outputBuffers ::= this _outputBuffers
+	defaultMap ::= this _yuvShader
 	init: func (other: This = null) { super(other) }
 	free: override func {
 		this _backend makeCurrent()
@@ -27,16 +31,33 @@ YuvExtensionContext: class extends OpenGLContext {
 		super()
 	}
 	createImage: override func (rasterImage: RasterImage) -> GpuImage {
-		match(rasterImage) {
-			case (graphicBufferImage: GraphicBufferYuv420Semiplanar) =>
-				yuv := graphicBufferImage toYuv(this)
-				result := this createYuv420Semiplanar(rasterImage size)
-				this _unpack(yuv, result)
-				yuv referenceCount decrease()
-				result
+		match (rasterImage) {
+			case (graphicBufferImage: GraphicBufferYuv420Semiplanar) => graphicBufferImage toYuv(this)
 			case => super(rasterImage)
 		}
 	}
+	getYuv: func (size: IntVector2D) -> EGLYuv {
+		result := this _outputBuffers dequeue(null)
+		if (result == null)
+			Debug error("No available output buffers in YuvExtensionContext")
+		result
+	}
+	toRaster: override func ~target (source: GpuImage, target: RasterImage) -> Promise {
+		result := OpenGLPromise new(this)
+		result sync()
+		result
+	}
+	// createImage: override func (rasterImage: RasterImage) -> GpuImage {
+	// 	match(rasterImage) {
+	// 		case (graphicBufferImage: GraphicBufferYuv420Semiplanar) =>
+	// 			yuv := graphicBufferImage toYuv(this)
+	// 			result := this createYuv420Semiplanar(rasterImage size)
+	// 			this _unpack(yuv, result)
+	// 			yuv referenceCount decrease()
+	// 			result
+	// 		case => super(rasterImage)
+	// 	}
+	// }
 	// toRaster: override func ~target (source: GpuImage, target: RasterImage) -> Promise {
 	// 	result: Promise
 	// 	if (target instanceOf(GraphicBufferYuv420Semiplanar) && source instanceOf(GpuYuv420Semiplanar)) {
@@ -53,10 +74,6 @@ YuvExtensionContext: class extends OpenGLContext {
 	// 		result = super(source, target)
 	// 	result
 	// }
-	yuvDraw: func (input, output: EGLYuv) {
-		this _yuvShader add("texture0", input)
-		DrawState new(output) setMap(this _yuvShader) draw()
-	}
 	_unpack: func (input: EGLYuv, target: GpuYuv420Semiplanar) {
 		this _unpackY add("texture0", input)
 		DrawState new(target y) setMap(this _unpackY) draw()

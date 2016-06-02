@@ -17,6 +17,7 @@ EGLImage: class extends GLTexture {
 	_eglDisplay: Pointer
 	_nativeBuffer: Pointer
 	_backendTexture: GLTexture
+	_handle: Pointer
 	/* PRIVATE CONSTRUCTOR, USE STATIC CREATE FUNCTION!!! */
 	init: func (type: TextureType, size: IntVector2D, =_nativeBuffer, context: GLContext) {
 		super(type, size)

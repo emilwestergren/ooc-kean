@@ -21,6 +21,7 @@ OpenGLPacked: abstract class extends GpuImage {
 	channels ::= this _channels
 	context ::= this _context as OpenGLContext
 	recyclable ::= this _recyclable
+	_ownsBackend := true
 	filter: Bool {
 		get { this _filter }
 		set(value) {
@@ -35,7 +36,8 @@ OpenGLPacked: abstract class extends GpuImage {
 		if (this recyclable)
 			this context recycle(this)
 		else {
-			this _backend free()
+			if (this _ownsBackend)
+				this _backend free()
 			super()
 		}
 	}

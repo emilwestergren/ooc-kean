@@ -32,7 +32,7 @@ GraphicBufferYuv420Semiplanar: class extends RasterYuv420Semiplanar {
 	free: override func {
 		if (this _rgba != null)
 			This _bin add(this _rgba)
-		this _buffer free()
+		version (!optiYuv) { this _buffer free() }
 		super()
 	}
 	toRgba: func (context: OpenGLContext) -> GpuImage {
