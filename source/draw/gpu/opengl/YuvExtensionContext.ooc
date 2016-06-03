@@ -39,7 +39,7 @@ YuvExtensionContext: class extends OpenGLContext {
 	getYuv: func (size: IntVector2D) -> EGLYuv {
 		result := this _outputBuffers dequeue(null)
 		if (result == null)
-			Debug error("No available output buffers in YuvExtensionContext")
+			Debug print("Warning: No available output buffers in YuvExtensionContext!")
 		result
 	}
 	toRaster: override func ~target (source: GpuImage, target: RasterImage) -> Promise {
