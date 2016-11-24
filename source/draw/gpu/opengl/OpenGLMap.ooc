@@ -11,7 +11,7 @@ use geometry
 use draw
 use draw-gpu
 use collections
-import backend/GLShaderProgram
+import backend/[GLShaderProgram, GLContext]
 import OpenGLContext, OpenGLPacked, OpenGLVolumeMonochrome
 
 version(!gpuOff) {
@@ -19,14 +19,15 @@ OpenGLMap: class extends Map {
 	_vertexSource: String
 	_fragmentSource: String
 	_program: GLShaderProgram = null
-	_context: OpenGLContext
-	init: func (=_vertexSource, =_fragmentSource, =_context) {
+	init: func (=_vertexSource, =_fragmentSource, context: GLContext) {
 		super()
 		if (this _vertexSource == null || this _fragmentSource == null)
 			Debug error("Vertex or fragment shader source not set")
-		this _program = this _context _backend createShaderProgram(this _vertexSource, this _fragmentSource)
+		this _program = context createShaderProgram(this _vertexSource, this _fragmentSource)
 	}
-	init: func ~defaultVertex (fragmentSource: String, context: OpenGLContext) { this init(slurp("shaders/default.vert"), fragmentSource, context) }
+	init: func ~defaultVertex (fragmentSource: String, context: OpenGLContext) { this init(slurp("shaders/default.vert"), fragmentSource, context _backend) }
+	init: func ~GLContext (fragmentSource: String, context: GLContext) { this init(slurp("shaders/default.vert"), fragmentSource, context) }
+	init: func ~OpenGLContext (vertexSource, fragmentSource: String, context: OpenGLContext) { this init(vertexSource, fragmentSource, context _backend) }
 	free: override func {
 		this _program free()
 		super()
@@ -88,6 +89,7 @@ OpenGLMap: class extends Map {
 
 OpenGLMapTransform: class extends OpenGLMap {
 	init: func (fragmentSource: String, context: OpenGLContext) { super(This vertexSource, fragmentSource, context) }
+	init: func ~GLContext (fragmentSource: String, context: GLContext) { super(This vertexSource, fragmentSource, context) }
 	useProgram: override func (forbiddenInput: Pointer, positionTransform: FloatTransform3D, textureTransform: FloatTransform3D) {
 		this add("transform", positionTransform)
 		this add("textureTransform", textureTransform)
